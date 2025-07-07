@@ -11,6 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Param, Get } from '@nestjs/common'; // ajoute si pas déjà présent
+
+
 
 @Controller('photos')
 export class PhotosController {
@@ -69,5 +72,11 @@ export class PhotosController {
       takenAt,
       location: body.location,
     });
+  }
+
+
+  @Get('user/:userId/saved')
+  async getSavedPhotos(@Param('userId') userId: string) {
+    return this.photosService.getSavedPhotosByUser(userId);
   }
 }

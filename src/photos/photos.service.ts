@@ -35,4 +35,9 @@ export class PhotosService {
 
     return await photo.save();
   }
+
+  async getSavedPhotosByUser(userId: string) {
+    return this.photoModel.find({ userId, saved: true }).sort({ takenAt: -1 }).exec();
+  }
+  
 }
