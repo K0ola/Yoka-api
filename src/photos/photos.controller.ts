@@ -26,18 +26,10 @@ export class PhotosController {
         filename: (req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
           const ext = extname(file.originalname);
-          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+          cb(null, filename);
         },
       }),
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-          return cb(new Error('❌ Seules les images sont autorisées !'), false);
-        }
-        cb(null, true);
-      },
-      limits: {
-        fileSize: 10 * 1024 * 1024, // 10 Mo max
-      },
     }),
   )
   async uploadPhoto(
@@ -45,7 +37,7 @@ export class PhotosController {
     @Body() body: any,
   ) {
     this.logger.log('📥 Requête reçue dans /photos/upload :');
-    this.logger.log('🖼️ FICHIER RECU : ' + JSON.stringify(file, null, 2));
+    this.logger.log('🖼️ Fichier : ' + JSON.stringify(file, null, 2));
     this.logger.log('📄 Données : ' + JSON.stringify(body, null, 2));
 
     if (!file || !file.filename) {
