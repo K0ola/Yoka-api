@@ -5,10 +5,7 @@ import { Photo, PhotoDocument } from './schemas/photos.schema';
 
 @Injectable()
 export class PhotosService {
-  constructor(
-    @InjectModel(Photo.name)
-    private photoModel: Model<PhotoDocument>,
-  ) {}
+  constructor(@InjectModel(Photo.name) private photoModel: Model<PhotoDocument>) {}
 
   async uploadPhoto({
     userId,
@@ -23,7 +20,9 @@ export class PhotosService {
     takenAt: Date;
     location?: string;
   }) {
-    if (!imageUrl) throw new Error('🛑 imageUrl est undefined dans le service !');
+    if (!imageUrl) {
+      throw new Error('🛑 imageUrl est undefined dans le service !');
+    }
 
     const photo = new this.photoModel({
       userId,
