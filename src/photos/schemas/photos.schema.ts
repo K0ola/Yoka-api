@@ -6,8 +6,8 @@ export class Photo {
   @Prop({ required: true })
   userId: string;
 
-  // @Prop({ required: true })
-  // imageUrl: string;
+  @Prop({ required: true })
+  imageUrl: string;
 
   @Prop({ default: false })
   saved: boolean;
