@@ -5,6 +5,7 @@ import {
   UseInterceptors,
   Body,
   InternalServerErrorException,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,6 +75,10 @@ export class PhotosController {
     });
   }
 
+  @Patch(':photoId/save')
+  async markAsSaved(@Param('photoId') photoId: string) {
+    return this.photosService.markAsSaved(photoId);
+  }
 
   @Get('user/:userId/saved')
   async getSavedPhotos(@Param('userId') userId: string) {
