@@ -36,21 +36,32 @@ export class PhotosController {
       throw new InternalServerErrorException('Aucun fichier image reçu.');
     }
 
-    // Assure que le dossier 'uploads' existe
+    // Création du dossier 'uploads' si inexistant
     const uploadsDir = path.join(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
       console.log('📁 Dossier uploads créé');
     }
 
-    // Enregistre le fichier localement
+    // Enregistrement du fichier image
     const filename = `${uuidv4()}.jpg`;
     const uploadPath = path.join(uploadsDir, filename);
-    console.log('📁 Chemin de sauvegarde :', uploadPath);
-    fs.writeFileSync(uploadPath, file.buffer);
+
+    try {
+      fs.writeFileSync(uploadPath, file.buffer);
+    } catch (err) {
+      console.error('❌ Erreur lors de l\'enregistrement du fichier :', err);
+      throw new InternalServerErrorException('Erreur lors de l\'enregistrement du fichier.');
+    }
 
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl final :', imageUrl);
+
+    // Validation avant enregistrement
+    if (!body.userId || !imageUrl || !body.takenAt) {
+      console.error('❌ Données manquantes pour l\'enregistrement en DB');
+      throw new InternalServerErrorException('Données incomplètes.');
+    }
 
     return this.photosService.uploadPhoto(
       body.userId,
