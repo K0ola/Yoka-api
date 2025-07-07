@@ -20,10 +20,8 @@ export class PhotosService {
     takenAt: Date;
     location?: string;
   }) {
-    if (!imageUrl) {
-      throw new Error('🛑 imageUrl est undefined dans le service !');
-    }
-
+    if (!imageUrl) throw new Error('🛑 imageUrl est undefined dans le service !');
+  
     const photo = new this.photoModel({
       userId,
       imageUrl,
@@ -31,9 +29,10 @@ export class PhotosService {
       takenAt,
       location,
     });
-
+  
     return await photo.save();
   }
+  
 
   async getUserPhotos(userId: string) {
     return await this.photoModel.find({ userId });
