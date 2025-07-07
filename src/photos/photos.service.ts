@@ -36,9 +36,10 @@ export class PhotosService {
     return await photo.save();
   }
 
-  async markAsSaved(photoId: string) {
+  async markPhotoAsSaved(photoId: string) {
     return this.photoModel.findByIdAndUpdate(photoId, { saved: true }, { new: true });
   }
+  
   
 
   async getSavedPhotosByUser(userId: string) {

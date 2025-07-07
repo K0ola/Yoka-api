@@ -75,10 +75,11 @@ export class PhotosController {
     });
   }
 
-  @Patch(':photoId/save')
+  @Patch(':photoId/mark-saved')
   async markAsSaved(@Param('photoId') photoId: string) {
-    return this.photosService.markAsSaved(photoId);
+    return this.photosService.markPhotoAsSaved(photoId);
   }
+  
 
   @Get('user/:userId/saved')
   async getSavedPhotos(@Param('userId') userId: string) {
