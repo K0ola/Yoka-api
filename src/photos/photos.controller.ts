@@ -50,6 +50,7 @@ export class PhotosController {
       throw new InternalServerErrorException('Erreur enregistrement fichier.');
     }
 
+    // 👇 Ce champ est crucial
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
@@ -57,17 +58,16 @@ export class PhotosController {
     const takenAt = new Date(body.takenAt);
 
     if (!body.userId || !imageUrl || !takenAt) {
-      console.error('❌ Données manquantes');
-      throw new InternalServerErrorException('Données incomplètes.');
+      throw new InternalServerErrorException('Champs obligatoires manquants');
     }
 
-    // ✅ Ici on passe bien un objet (et pas des arguments séparés)
+    // 👇 Appel avec tous les champs corrects
     return this.photosService.uploadPhoto(
       body.userId,
-      imageUrl,   // ← ici bien transmis
+      imageUrl,
       saved,
       takenAt,
       body.location,
-    );    
+    );
   }
 }
