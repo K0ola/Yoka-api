@@ -7,20 +7,17 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer'; // ⬅️ À ajouter
 import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
 import * as fs from 'fs';
 import * as path from 'path';
-
-const storage = multer.memoryStorage(); // ⬅️ Utiliser memory storage ici
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image', { storage })) // ⬅️ Ajout de { storage }
+  @UseInterceptors(FileInterceptor('image'))
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {
@@ -35,7 +32,6 @@ export class PhotosController {
     console.log('📄 Données :', body);
 
     if (!file || !file.buffer) {
-      console.error('❌ Aucun fichier reçu ou buffer vide');
       throw new InternalServerErrorException('Aucun fichier image reçu.');
     }
 
@@ -47,19 +43,27 @@ export class PhotosController {
     const filename = `${uuidv4()}.jpg`;
     const uploadPath = path.join(uploadsDir, filename);
 
-    fs.writeFileSync(uploadPath, file.buffer);
+    try {
+      fs.writeFileSync(uploadPath, file.buffer);
+    } catch (err) {
+      console.error('❌ Erreur fichier :', err);
+      throw new InternalServerErrorException('Erreur écriture fichier.');
+    }
 
+    // Génère bien imageUrl
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
-    const saved = body.saved === 'true';
-    const takenAt = new Date(body.takenAt);
+    // Sanity check
+    if (!body.userId || !imageUrl || !body.takenAt) {
+      throw new InternalServerErrorException('Données incomplètes.');
+    }
 
     return this.photosService.uploadPhoto(
       body.userId,
       imageUrl,
-      saved,
-      takenAt,
+      body.saved === 'true',
+      new Date(body.takenAt),
       body.location,
     );
   }
