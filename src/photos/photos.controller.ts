@@ -40,7 +40,7 @@ export class PhotosController {
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
 
-    const imageUrl = `/uploads/${file.filename}`;
+    const imageUrl = `/uploads/${file?.filename || file.originalname || `${Date.now()}.jpg`}`;
 
     return this.photosService.uploadPhoto(
       body.userId,
