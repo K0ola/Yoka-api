@@ -66,12 +66,12 @@ export class PhotosController {
     console.log('✅ imageUrl généré :', imageUrl);
     console.log('📤 Envoi au service avec imageUrl :', imageUrl);
 
-    return this.photosService.uploadPhoto(
-      body.userId,
-      imageUrl, // <== vérifie bien que c’est cette variable locale, PAS body.imageUrl
+    return this.photosService.uploadPhoto({
+      userId: body.userId,
+      imageUrl,
       saved,
       takenAt,
-      body.location,
-    );
+      location: body.location,
+    });    
   }
 }

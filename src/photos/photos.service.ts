@@ -7,22 +7,21 @@ import { Photo, PhotoDocument } from './schemas/photos.schema';
 export class PhotosService {
   constructor(@InjectModel(Photo.name) private photoModel: Model<PhotoDocument>) {}
 
-  async uploadPhoto(
-    userId: string,
-    imageUrl: string,
+  async uploadPhoto({
+    userId,
+    imageUrl,
     saved = false,
-    takenAt: Date,
-    location?: string,
-  ) {
-    console.log('💾 Enregistrement en base de données...');
-    console.log({
-      userId,
-      imageUrl,
-      saved,
-      takenAt,
-      location,
-    });
-
+    takenAt,
+    location,
+  }: {
+    userId: string;
+    imageUrl: string;
+    saved?: boolean;
+    takenAt: Date;
+    location?: string;
+  }) {
+    if (!imageUrl) throw new Error('🛑 imageUrl est undefined dans le service !');
+  
     const photo = new this.photoModel({
       userId,
       imageUrl,
@@ -30,11 +29,10 @@ export class PhotosService {
       takenAt,
       location,
     });
-
-    const result = await photo.save();
-    console.log('✅ Photo enregistrée en DB :', result);
-    return result;
+  
+    return await photo.save();
   }
+  
 
   async getUserPhotos(userId: string) {
     return await this.photoModel.find({ userId });
