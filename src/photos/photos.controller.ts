@@ -36,38 +36,39 @@ export class PhotosController {
       throw new InternalServerErrorException('Aucun fichier image reçu.');
     }
 
-    // Création du dossier 'uploads' si inexistant
+    // Dossier d'upload
     const uploadsDir = path.join(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
-      console.log('📁 Dossier uploads créé');
     }
 
-    // Enregistrement du fichier image
     const filename = `${uuidv4()}.jpg`;
     const uploadPath = path.join(uploadsDir, filename);
 
     try {
       fs.writeFileSync(uploadPath, file.buffer);
     } catch (err) {
-      console.error('❌ Erreur lors de l\'enregistrement du fichier :', err);
+      console.error('❌ Erreur lors de l\'écriture du fichier :', err);
       throw new InternalServerErrorException('Erreur lors de l\'enregistrement du fichier.');
     }
 
-    const imageUrl = `/uploads/${filename}`;
-    console.log('✅ imageUrl final :', imageUrl);
+    // Correction ici : imageUrl défini juste avant l'appel
+    const imageUrl: string = `/uploads/${filename}`;
+    console.log('✅ imageUrl généré :', imageUrl);
 
-    // Validation avant enregistrement
-    if (!body.userId || !imageUrl || !body.takenAt) {
-      console.error('❌ Données manquantes pour l\'enregistrement en DB');
+    const saved = body.saved === 'true';
+    const takenAt = new Date(body.takenAt);
+
+    if (!body.userId || !imageUrl || !takenAt) {
+      console.error('❌ Données manquantes');
       throw new InternalServerErrorException('Données incomplètes.');
     }
 
     return this.photosService.uploadPhoto(
       body.userId,
       imageUrl,
-      body.saved === 'true',
-      new Date(body.takenAt),
+      saved,
+      takenAt,
       body.location,
     );
   }
