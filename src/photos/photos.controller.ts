@@ -46,24 +46,27 @@ export class PhotosController {
     try {
       fs.writeFileSync(uploadPath, file.buffer);
     } catch (err) {
-      console.error('❌ Erreur fichier :', err);
-      throw new InternalServerErrorException('Erreur écriture fichier.');
+      console.error('❌ Erreur lors de l\'écriture du fichier :', err);
+      throw new InternalServerErrorException('Erreur enregistrement fichier.');
     }
 
-    // Génère bien imageUrl
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
-    // Sanity check
-    if (!body.userId || !imageUrl || !body.takenAt) {
-      throw new InternalServerErrorException('Données incomplètes.');
+    const saved = body.saved === 'true';
+    const takenAt = new Date(body.takenAt);
+
+    // Vérification finale
+    if (!body.userId || !imageUrl || !takenAt) {
+      throw new InternalServerErrorException('Données manquantes.');
     }
 
+    // ✅ Ne pas utiliser body.imageUrl !
     return this.photosService.uploadPhoto(
       body.userId,
       imageUrl,
-      body.saved === 'true',
-      new Date(body.takenAt),
+      saved,
+      takenAt,
       body.location,
     );
   }
