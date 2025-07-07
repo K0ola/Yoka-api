@@ -63,9 +63,12 @@ export class PhotosController {
     }
 
     // ✅ Ne surtout pas mettre `body.imageUrl` ici !
+    console.log('✅ imageUrl généré :', imageUrl);
+    console.log('📤 Envoi au service avec imageUrl :', imageUrl);
+
     return this.photosService.uploadPhoto(
       body.userId,
-      imageUrl,
+      imageUrl, // <== vérifie bien que c’est cette variable locale, PAS body.imageUrl
       saved,
       takenAt,
       body.location,
