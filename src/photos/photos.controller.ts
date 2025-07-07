@@ -4,32 +4,19 @@ import {
   UploadedFile,
   UseInterceptors,
   Body,
-  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
+import * as fs from 'fs';
 import * as path from 'path';
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
-  
-
   @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const filename = `${uuidv4()}${path.extname(file.originalname)}`;
-          cb(null, filename);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image'))
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {
@@ -42,16 +29,15 @@ export class PhotosController {
     console.log('📥 Requête reçue dans /photos/upload :');
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
-    console.log('file.filename =', file?.filename);
-    console.log('file.originalname =', file?.originalname);
 
+    // Enregistrement manuel du fichier
+    const filename = `${uuidv4()}.jpg`;
+    const uploadPath = path.join(__dirname, '..', '..', 'uploads', filename);
 
-    if (!file || !file.filename) {
-      throw new BadRequestException('Aucun fichier valide reçu.');
-    }
+    fs.writeFileSync(uploadPath, file.buffer);
 
-    const imageUrl = `/uploads/${file.filename}`;
-    console.log('📸 imageUrl généré :', imageUrl);
+    const imageUrl = `/uploads/${filename}`;
+    console.log('✅ imageUrl final :', imageUrl);
 
     return this.photosService.uploadPhoto(
       body.userId,
