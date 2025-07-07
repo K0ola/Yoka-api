@@ -7,10 +7,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { PhotosService } from './photos.service';
-import { randomUUID } from 'crypto';
+import { multerOptions } from './multer.config';
 
 @Controller('photos')
 export class PhotosController {
@@ -19,20 +17,7 @@ export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
   @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
-          const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          cb(null, filename);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadPhoto(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any,
