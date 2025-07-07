@@ -62,12 +62,12 @@ export class PhotosController {
     }
 
     // ✅ Ici on passe bien un objet (et pas des arguments séparés)
-    return this.photosService.uploadPhoto({
-      userId: body.userId,
-      imageUrl,
+    return this.photosService.uploadPhoto(
+      body.userId,
+      imageUrl,   // ← ici bien transmis
       saved,
       takenAt,
-      location: body.location,
-    });
+      body.location,
+    );    
   }
 }
