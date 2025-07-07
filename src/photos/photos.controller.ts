@@ -16,6 +16,8 @@ import * as path from 'path';
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
+  
+
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('image', {
@@ -40,6 +42,9 @@ export class PhotosController {
     console.log('📥 Requête reçue dans /photos/upload :');
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
+    console.log('file.filename =', file?.filename);
+    console.log('file.originalname =', file?.originalname);
+
 
     if (!file || !file.filename) {
       throw new BadRequestException('Aucun fichier valide reçu.');
