@@ -22,6 +22,7 @@ export class PhotosController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
+        
         destination: './uploads',
         filename: (req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${randomUUID()}`;

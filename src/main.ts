@@ -5,10 +5,12 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+
+  // ← Sert les fichiers du dossier "uploads"
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
+
   await app.listen(3000);
 }
 bootstrap();
