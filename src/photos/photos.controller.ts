@@ -50,18 +50,19 @@ export class PhotosController {
       throw new InternalServerErrorException('Erreur enregistrement fichier.');
     }
 
+    // 🔥 imageUrl doit être généré ici, et PAS venir de body
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
     const saved = body.saved === 'true';
     const takenAt = new Date(body.takenAt);
 
-    // Vérification finale
     if (!body.userId || !imageUrl || !takenAt) {
-      throw new InternalServerErrorException('Données manquantes.');
+      console.error('❌ Données manquantes');
+      throw new InternalServerErrorException('Données incomplètes.');
     }
 
-    // ✅ Ne pas utiliser body.imageUrl !
+    // ✅ Ne surtout pas mettre `body.imageUrl` ici !
     return this.photosService.uploadPhoto(
       body.userId,
       imageUrl,
