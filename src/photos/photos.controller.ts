@@ -4,6 +4,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Body,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,10 +31,22 @@ export class PhotosController {
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
 
-    // Enregistrement manuel du fichier
-    const filename = `${uuidv4()}.jpg`;
-    const uploadPath = path.join(__dirname, '..', '..', 'uploads', filename);
+    if (!file || !file.buffer) {
+      console.error('❌ Aucun fichier reçu ou buffer vide');
+      throw new InternalServerErrorException('Aucun fichier image reçu.');
+    }
 
+    // Assure que le dossier 'uploads' existe
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      console.log('📁 Dossier uploads créé');
+    }
+
+    // Enregistre le fichier localement
+    const filename = `${uuidv4()}.jpg`;
+    const uploadPath = path.join(uploadsDir, filename);
+    console.log('📁 Chemin de sauvegarde :', uploadPath);
     fs.writeFileSync(uploadPath, file.buffer);
 
     const imageUrl = `/uploads/${filename}`;
