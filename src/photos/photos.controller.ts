@@ -7,17 +7,20 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer'; // ⬅️ À ajouter
 import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const storage = multer.memoryStorage(); // ⬅️ Utiliser memory storage ici
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('image', { storage })) // ⬅️ Ajout de { storage }
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {
@@ -36,7 +39,6 @@ export class PhotosController {
       throw new InternalServerErrorException('Aucun fichier image reçu.');
     }
 
-    // Dossier d'upload
     const uploadsDir = path.join(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
@@ -45,24 +47,13 @@ export class PhotosController {
     const filename = `${uuidv4()}.jpg`;
     const uploadPath = path.join(uploadsDir, filename);
 
-    try {
-      fs.writeFileSync(uploadPath, file.buffer);
-    } catch (err) {
-      console.error('❌ Erreur lors de l\'écriture du fichier :', err);
-      throw new InternalServerErrorException('Erreur lors de l\'enregistrement du fichier.');
-    }
+    fs.writeFileSync(uploadPath, file.buffer);
 
-    // Correction ici : imageUrl défini juste avant l'appel
-    const imageUrl: string = `/uploads/${filename}`;
+    const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
     const saved = body.saved === 'true';
     const takenAt = new Date(body.takenAt);
-
-    if (!body.userId || !imageUrl || !takenAt) {
-      console.error('❌ Données manquantes');
-      throw new InternalServerErrorException('Données incomplètes.');
-    }
 
     return this.photosService.uploadPhoto(
       body.userId,
