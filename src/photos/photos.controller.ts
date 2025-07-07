@@ -4,6 +4,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -21,7 +22,7 @@ export class PhotosController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const filename = `${uuidv4()}.jpg`;
+          const filename = `${uuidv4()}${path.extname(file.originalname)}`;
           cb(null, filename);
         },
       }),
@@ -40,7 +41,12 @@ export class PhotosController {
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
 
-    const imageUrl = `/uploads/${file?.filename || file.originalname || `${Date.now()}.jpg`}`;
+    if (!file || !file.filename) {
+      throw new BadRequestException('Aucun fichier valide reçu.');
+    }
+
+    const imageUrl = `/uploads/${file.filename}`;
+    console.log('📸 imageUrl généré :', imageUrl);
 
     return this.photosService.uploadPhoto(
       body.userId,
