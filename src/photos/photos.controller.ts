@@ -18,7 +18,6 @@ export class PhotosController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {
       userId: string;
-      imageUrl: string;
       saved?: string;
       takenAt: string;
       location?: string;
@@ -28,9 +27,11 @@ export class PhotosController {
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
 
+    const imageUrl = `/uploads/${file.filename}`; // ou file.path selon ta logique
+
     return this.photosService.uploadPhoto(
       body.userId,
-      body.imageUrl,
+      imageUrl,
       body.saved === 'true',
       new Date(body.takenAt),
       body.location,
