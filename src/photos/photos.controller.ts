@@ -6,15 +6,28 @@ import {
   Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
+import * as path from 'path';
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
-  upload(
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const filename = `${uuidv4()}.jpg`;
+          cb(null, filename);
+        },
+      }),
+    }),
+  )
+  async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: {
       userId: string;
@@ -27,7 +40,7 @@ export class PhotosController {
     console.log('🖼️ Fichier :', file);
     console.log('📄 Données :', body);
 
-    const imageUrl = `/uploads/${file.filename}`; // ou file.path selon ta logique
+    const imageUrl = `/uploads/${file.filename}`;
 
     return this.photosService.uploadPhoto(
       body.userId,
