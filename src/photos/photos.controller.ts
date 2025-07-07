@@ -26,10 +26,18 @@ export class PhotosController {
         filename: (req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
           const ext = extname(file.originalname);
-          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          cb(null, filename);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+          return cb(new Error('❌ Seules les images sont autorisées !'), false);
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10 Mo max
+      },
     }),
   )
   async uploadPhoto(
@@ -37,27 +45,17 @@ export class PhotosController {
     @Body() body: any,
   ) {
     this.logger.log('📥 Requête reçue dans /photos/upload :');
-    this.logger.log('🖼️ Fichier : ' + JSON.stringify(file, null, 2));
+    this.logger.log('🖼️ FICHIER RECU : ' + JSON.stringify(file, null, 2));
     this.logger.log('📄 Données : ' + JSON.stringify(body, null, 2));
 
-    // Vérification du fichier
     if (!file || !file.filename) {
       throw new Error('🛑 Aucun fichier reçu ou nom de fichier manquant');
     }
 
-    // Construction de l’URL de l'image (adapte le domaine selon ton serveur)
     const imageUrl = `http://82.25.112.112:3000/uploads/${file.filename}`;
+    this.logger.log('🌐 imageUrl généré : ' + imageUrl);
 
     const { userId, saved, takenAt, location } = body;
-
-    this.logger.log('💾 Enregistrement en base de données...');
-    this.logger.log({
-      userId,
-      imageUrl,
-      saved,
-      takenAt,
-      location,
-    });
 
     return await this.photosService.uploadPhoto({
       userId,
