@@ -50,7 +50,6 @@ export class PhotosController {
       throw new InternalServerErrorException('Erreur enregistrement fichier.');
     }
 
-    // 🔥 imageUrl doit être généré ici, et PAS venir de body
     const imageUrl = `/uploads/${filename}`;
     console.log('✅ imageUrl généré :', imageUrl);
 
@@ -62,16 +61,13 @@ export class PhotosController {
       throw new InternalServerErrorException('Données incomplètes.');
     }
 
-    // ✅ Ne surtout pas mettre `body.imageUrl` ici !
-    console.log('✅ imageUrl généré :', imageUrl);
-    console.log('📤 Envoi au service avec imageUrl :', imageUrl);
-
+    // ✅ Ici on passe bien un objet (et pas des arguments séparés)
     return this.photosService.uploadPhoto({
       userId: body.userId,
       imageUrl,
       saved,
       takenAt,
       location: body.location,
-    });    
+    });
   }
 }
