@@ -4,43 +4,70 @@ import {
   UploadedFile,
   UseInterceptors,
   Body,
-  Logger,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { v4 as uuidv4 } from 'uuid';
 import { PhotosService } from './photos.service';
-import { multerOptions } from './multer.config';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Controller('photos')
 export class PhotosController {
-  private readonly logger = new Logger(PhotosController.name);
-
   constructor(private readonly photosService: PhotosService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image', multerOptions))
-  async uploadPhoto(
+  @UseInterceptors(FileInterceptor('image'))
+  async upload(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: any,
+    @Body() body: {
+      userId: string;
+      saved?: string;
+      takenAt: string;
+      location?: string;
+    },
   ) {
-    this.logger.log('📥 Requête reçue dans /photos/upload :');
-    this.logger.log('🖼️ Fichier : ' + JSON.stringify(file, null, 2));
-    this.logger.log('📄 Données : ' + JSON.stringify(body, null, 2));
+    console.log('📥 Requête reçue dans /photos/upload :');
+    console.log('🖼️ Fichier :', file);
+    console.log('📄 Données :', body);
 
-    if (!file || !file.filename) {
-      throw new Error('🛑 Aucun fichier reçu ou nom de fichier manquant');
+    if (!file || !file.buffer) {
+      throw new InternalServerErrorException('Aucun fichier image reçu.');
     }
 
-    const imageUrl = `http://82.25.112.112:3000/uploads/${file.filename}`;
-    this.logger.log('🌐 imageUrl généré : ' + imageUrl);
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 
-    const { userId, saved, takenAt, location } = body;
+    const filename = `${uuidv4()}.jpg`;
+    const uploadPath = path.join(uploadsDir, filename);
 
-    return await this.photosService.uploadPhoto({
-      userId,
+    try {
+      fs.writeFileSync(uploadPath, file.buffer);
+    } catch (err) {
+      console.error('❌ Erreur lors de l\'écriture du fichier :', err);
+      throw new InternalServerErrorException('Erreur enregistrement fichier.');
+    }
+
+    const imageUrl = `/uploads/${filename}`;
+    console.log('✅ imageUrl généré :', imageUrl);
+
+    const saved = body.saved === 'true';
+    const takenAt = new Date(body.takenAt);
+
+    if (!body.userId || !imageUrl || !takenAt) {
+      console.error('❌ Données manquantes');
+      throw new InternalServerErrorException('Données incomplètes.');
+    }
+
+    // ✅ Ici on passe bien un objet (et pas des arguments séparés)
+    return this.photosService.uploadPhoto({
+      userId: body.userId,
       imageUrl,
-      saved: saved === 'true',
-      takenAt: new Date(takenAt),
-      location,
+      saved,
+      takenAt,
+      location: body.location,
     });
   }
 }
