@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -11,6 +11,8 @@ export class UsersController {
   ) {
     return this.usersService.create(dto);
   }
+
+
 
   @Post(':id/friends/request/:targetId')
   async sendRequest(@Param('id') id: string, @Param('targetId') targetId: string) {
@@ -26,4 +28,10 @@ export class UsersController {
   async rejectRequest(@Param('id') id: string, @Param('requesterId') requesterId: string) {
     return this.usersService.rejectFriendRequest(id, requesterId);
   }
+
+  @Get('search/:query')
+  async searchUser(@Param('query') query: string) {
+    return this.usersService.findByEmailOrPseudo(query);
+  }
+
 }

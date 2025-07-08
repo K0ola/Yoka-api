@@ -74,4 +74,13 @@ export class UsersService {
     await user.save();
     await requester.save();
   }
+
+  async findByEmailOrPseudo(query: string) {
+    return this.userModel.findOne({
+      $or: [{ email: query }, { pseudo: query }],
+    }).exec();
+  }
+  
 }
+
+
