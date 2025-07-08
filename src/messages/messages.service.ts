@@ -10,8 +10,16 @@ export class MessagesService {
   ) {}
 
   async sendMessage(conversationId: string, senderId: string, content: string) {
-    return this.msgModel.create({ conversation: conversationId, sender: senderId, content });
+    const created = await this.msgModel.create({
+      conversation: conversationId,
+      sender: senderId,
+      content,
+    });
+  
+    // Peupler le champ sender (nécessaire pour voir le pseudo côté front)
+    return this.msgModel.findById(created._id).populate('sender', 'pseudo');
   }
+  
 
   async getMessages(conversationId: string) {
     return this.msgModel
