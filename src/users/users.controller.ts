@@ -36,4 +36,10 @@ export class UsersController {
     return user;
   }
 
+  @Get(':id/friends/requests')
+  async getFriendRequests(@Param('id') id: string) {
+    return this.usersService.getFriendRequests(id);
+  }
+
+
 }

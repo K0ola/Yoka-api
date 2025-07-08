@@ -80,6 +80,19 @@ export class UsersService {
       $or: [{ email: query }, { pseudo: query }],
     }).exec();
   }
+
+
+  async getFriendRequests(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .populate('friendRequests', 'pseudo _id') // On ne récupère que le pseudo et l’id
+      .exec();
+  
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+  
+    return user.friendRequests;
+  }
+  
 }
 
 
