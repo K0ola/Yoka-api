@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -30,8 +30,10 @@ export class UsersController {
   }
 
   @Get('search/:query')
-  async searchUser(@Param('query') query: string) {
-    return this.usersService.findByEmailOrPseudo(query);
+  async search(@Param('query') query: string) {
+    const user = await this.usersService.findByEmailOrPseudo(query);
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    return user;
   }
 
 }

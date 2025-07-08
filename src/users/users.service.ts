@@ -80,7 +80,6 @@ export class UsersService {
       $or: [{ email: query }, { pseudo: query }],
     }).exec();
   }
-  
 }
 
 
