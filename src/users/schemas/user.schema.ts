@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
-@Schema({ timestamps: true }) // ← Cela ajoute automatiquement `createdAt` et `updatedAt`
+@Schema({ timestamps: true })
 export class User {
   @Prop({ required: true })
   email: string;
@@ -20,6 +20,15 @@ export class User {
 
   @Prop()
   verifyCode?: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  friends: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  friendRequests: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  sentRequests: Types.ObjectId[];
 }
 
 export type UserDocument = User & Document;
