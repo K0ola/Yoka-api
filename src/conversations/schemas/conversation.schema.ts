@@ -7,4 +7,5 @@ export class Conversation extends Document {
   participants: Types.ObjectId[];
 }
 
+export type ConversationDocument = Conversation & Document;
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);

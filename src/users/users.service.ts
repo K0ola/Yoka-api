@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { Conversation, ConversationDocument } from '../conversations/schemas/conversation.schema'; // <-- Ajouté
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
@@ -8,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Conversation.name) private conversationModel: Model<ConversationDocument>, // <-- Ajouté
   ) {}
 
   async create(dto: { email: string; password: string; phoneNumber?: string; pseudo: string }) {
@@ -60,6 +62,17 @@ export class UsersService {
 
     await user.save();
     await requester.save();
+
+    // ➕ Créer une conversation automatiquement (sauf si elle existe déjà)
+    const existing = await this.conversationModel.findOne({
+      participants: { $all: [user._id, requester._id], $size: 2 },
+    });
+
+    if (!existing) {
+      await this.conversationModel.create({
+        participants: [user._id, requester._id],
+      });
+    }
   }
 
   async rejectFriendRequest(userId: string, requesterId: string) {
@@ -81,18 +94,14 @@ export class UsersService {
     }).exec();
   }
 
-
   async getFriendRequests(userId: string) {
     const user = await this.userModel
       .findById(userId)
-      .populate('friendRequests', 'pseudo _id') // On ne récupère que le pseudo et l’id
+      .populate('friendRequests', 'pseudo _id')
       .exec();
-  
+
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
-  
+
     return user.friendRequests;
   }
-  
 }
-
-
