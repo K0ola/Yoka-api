@@ -19,30 +19,22 @@ export class ConversationsService {
     return this.convoModel.create({ participants: userIds });
   }
 
-  // conversations.service.ts
-async getConversationsForUser(userId: string) {
+  async getConversationsForUser(userId: string) {
     const conversations = await this.convoModel
-    .find({ participants: userId })
-    .populate('participants', 'pseudo _id')
-    .exec();
-
+      .find({ participants: userId })
+      .populate('participants', 'pseudo _id') // On récupère les pseudos des amis
+      .exec();
   
     return conversations.map((conv) => {
-      const other = conv.participants.find(
-        (p: any) => p._id.toString() !== userId
+      const populatedParticipants = conv.participants as any[];
+      const other = populatedParticipants.find(
+        (p) => p._id.toString() !== userId
       );
   
-      return conversations.map((conv) => {
-        const populatedParticipants = conv.participants as any[];
-        const other = populatedParticipants.find(
-          (p) => p._id.toString() !== userId
-        );
-      
-        return {
-          _id: conv._id,
-          pseudo: other?.pseudo || 'Inconnu',
-        };
-      });   
-    }) 
-    }
+      return {
+        _id: conv._id,
+        pseudo: other?.pseudo || 'Inconnu',
+      };
+    });
+  }
 }

@@ -12,8 +12,9 @@ export class ConversationsController {
 
   @Get(':userId')
     getUserConvos(@Param('userId') userId: string) {
-    return this.service.getConversationsForUser(userId); // ✅ Remplacé
+    return this.service.getConversationsForUser(userId);
     }
+
 
 
 }
