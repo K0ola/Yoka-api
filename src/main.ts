@@ -11,6 +11,8 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
+  app.enableCors();
+
   await app.listen(3000);
 }
 bootstrap();
